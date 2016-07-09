@@ -37,3 +37,26 @@ def get_tweets_for(user, ntweets=200, max_id=None, since_id=None):
         iters += 1
         params['max_id'] = tweets[-1]['id']
     return user_tweets
+
+def get_trump_tweets(nreqs=180, max_id=None, since_id=None):
+    """Gets tweets from Donald Trump, asking for the maximum of 200 tweets each
+    time. nreqs specifies the number of requests to make, up to a max of 180. 
+    180 is the number of requests allowable by API every 15 minutes with 
+    current auth type. Excludes retweets, but includes replies. Returns a tuple
+    containing a list of the tweets returned and the id of the last retrieved 
+    tweet.
+    """
+    params = {}
+    if max_id:
+        params['max_id'] = max_id
+    if since_id:
+        params['since_id'] = since_id
+    user_tweets, iters = [], 0
+    nreqs = min(180,nreqs)
+    while iters < nreqs:
+        tweets = twitter_api.statuses.user_timeline(screen_name='realDonaldTrump',
+                count=200, include_rts=0, **params)
+        user_tweets.extend(tweets)
+        iters += 1
+        params['max_id'] = tweets[-1]['id']
+    return (user_tweets,max_id)
