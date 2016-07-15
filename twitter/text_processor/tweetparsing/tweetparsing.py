@@ -20,3 +20,12 @@ def tweet_parse(tweet_txt, nourl=1,noht=1,nouser=1):
     tweet_txt = ''.join(ch for ch in tweet_txt if ch not in exclude)
     #fix whitespace
     return ' '.join(tweet_txt.split())
+
+def ht_strip(tweet_txt):
+    '''Function to take out hashtags from tweet and return as a list'''
+    return re.findall(r"#\S+",tweet_txt)
+
+def user_strip(tweet_txt):
+    '''Function to take out users from tweet and return as a list'''
+    return re.findall(r"@\S+",tweet_txt)
+    
