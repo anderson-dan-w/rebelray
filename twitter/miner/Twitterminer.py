@@ -35,6 +35,9 @@ def get_tweets_for(user, ntweets=200, max_id=None, since_id=None):
                 count=nrequested, include_rts=0, **params)
         user_tweets.extend(tweets)
         iters += 1
+        if len(tweets) ==  0:
+            ## got no results: maybe hit limit, or ran out of tweets, or error
+            break
         params['max_id'] = tweets[-1]['id']
     return user_tweets
 
@@ -58,5 +61,32 @@ def get_trump_tweets(nreqs=180, max_id=None, since_id=None):
                 count=200, include_rts=0, **params)
         user_tweets.extend(tweets)
         iters += 1
+        if len(tweets) ==  0:
+            ## got no results: maybe hit limit, or ran out of tweets, or error
+            break
         params['max_id'] = tweets[-1]['id']
     return (user_tweets,max_id)
+    
+## to create database of tweets:
+## note, doesn't probably directly, but encoding some knowledge
+def fill_db():
+    tweets = get_trump_tweets()
+    from data_processor import storer as Storer
+    for tweet in tweets:
+        ## for some reason dan doesn't understand, this not only stores the
+        ## entities, it also stores the tweeter and the tweet
+        Storer.store_entity(tweet)
+        ## NB this may take a while - something like 3000-4000 tweets
+
+## to generate ngrams/nonsense
+## note, doesn't probably directly, but encoding some knowledge
+def get_trump_nonsense(run_fill_db=False):
+    if run_fill_db:
+        fill_db()
+    from data_controller import storer as Storer
+    from text_processor.markov import ngrams
+    from data_controller import db_setup as DB
+    session, _ = DB.get_session()
+    tweets = (t.text for t in session.query(Storer.Tweet).all())
+    ndict = ngrams.generate_all_ngrams(tweets, 3) ## or however many words
+    print(ngrams.generate_nonsense(ndict, 20))

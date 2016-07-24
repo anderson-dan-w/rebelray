@@ -11,13 +11,21 @@ def generate_ngrams(words, n):
     word_dict = collections.defaultdict(list)
     offset = n - 1 ## how many words from the end to stop slicing
     for i in range(len(words) - offset):
-        key = tuple(words[i:i+offset])
+        key = tuple([w for w in words[i:i+offset]])
         value = words[i+offset]
         word_dict[key].append(value)
     return word_dict
 
+def generate_all_ngrams(list_of_words, n):
+    full_dict = collections.defaultdict(list)
+    for words in list_of_words:
+        word_dict = generate_ngrams(words, n)
+        for k, v in word_dict.items():
+            full_dict[k].extend(v)
+    return full_dict
+
 def normalize_key(key, word_dict):
-    ## pick random dict_key to determine len of ngram (less one)
+    ## pick some dict_key to determine len of ngram (less one)
     key_length = len(next(iter(word_dict)))
 
     ## allow other types than tuple for key
@@ -49,6 +57,8 @@ def generate_nonsense(word_dict, n, key=None):
     key = normalize_key(key, word_dict)
     words = list(key)
     for i in range(n-len(words)):
+        if not word_dict[key]:
+            print("Woops: {} has no values".format(key))
         next_word = random.choice(word_dict[key])
         ## keys need to be tuples, but can't append to tuples so temp-list
         key = tuple(list(key[1:]) + [next_word])
